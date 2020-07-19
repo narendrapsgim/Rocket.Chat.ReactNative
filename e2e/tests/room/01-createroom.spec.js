@@ -4,6 +4,18 @@ const {
 const data = require('../../data');
 const { tapBack, sleep, navigateToLogin, login } = require('../../helpers/app');
 
+async function tryTapping(theElement, timeout){
+	try {
+		await theElement.tap()
+	} catch(e) {
+		if(timeout <= 0){ //TODO: Maths. How closely has the timeout been honoured here?
+			throw e
+		}
+		await sleep(100)
+		await tryTapping(theElement, timeout - 100)
+	}
+}
+
 describe('Create room screen', () => {
 	before(async() => {
 		await device.launchApp({ permissions: { notifications: 'YES' }, delete: true });
@@ -27,8 +39,9 @@ describe('Create room screen', () => {
 		describe('Usage', async() => {
 			it('should back to rooms list', async() => {
 				await element(by.id('new-message-view-close')).tap();
-				await waitFor(element(by.id('rooms-list-view'))).toExist().withTimeout(2000);
-				await element(by.id('rooms-list-view-create-channel')).tap();
+				await waitFor(element(by.id('rooms-list-view'))).toBeVisible().withTimeout(2000);
+				await tryTapping(element(by.id('rooms-list-view-create-channel')), 3000);
+				//await element(by.id('rooms-list-view-create-channel')).tap();
 				await waitFor(element(by.id('new-message-view'))).toExist().withTimeout(2000);
 			});
 
